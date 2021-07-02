@@ -11,7 +11,7 @@ struct Field
     Field(): cells(w, std::vector<bool>(h, false))
     {}
 
-    int w = 60;
+    int w = 30;
     int h = 30;
 
     std::vector<std::vector<bool>> cells;
@@ -39,7 +39,7 @@ void print(const Field& field)
     clearScreen(field.h);
     for (int y = 0; y < field.h; y++) {
         for (int x = 0; x < field.w; x++) {
-            std::cout << (field.cells[x][y] ? "▣" : "▢");
+            std::cout << (field.cells[x][y] ? "▣ " : "▢ ");
         }
         std::cout << std::endl;
     }
