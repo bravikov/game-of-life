@@ -47,6 +47,52 @@ void print(const Field& field)
 }
 
 void next(Field& field);
+void fixCyclicPoint(int& value, const int size);
+
+/**
+ * Creates Glider in [x, y]
+ *
+ * ▣ ▢ ▢
+ * ▢ ▣ ▣
+ * ▣ ▣ ▢
+ */
+void addGlider(Field& field, const int x, const int y)
+{
+    for (int y2 = y; y2 < y + 3; y2++) {
+        for (int x2 = x; x2 < x + 3; x2++) {
+            field.cells[x2][y2] = false;
+        }
+    }
+
+    field.cells[x+0][y+0] = true;
+
+    field.cells[x+1][y+1] = true;
+    field.cells[x+2][y+1] = true;
+
+    field.cells[x+0][y+2] = true;
+    field.cells[x+1][y+2] = true;
+}
+
+
+/**
+ * Creates Blinker in [x, y]
+ *
+ * ▢ ▣ ▢
+ * ▢ ▣ ▢
+ * ▢ ▣ ▢
+ */
+void addBlinker(Field& field, const int x, const int y)
+{
+    for (int y2 = y; y2 < y + 3; y2++) {
+        for (int x2 = x; x2 < x + 3; x2++) {
+            field.cells[x2][y2] = false;
+        }
+    }
+
+    field.cells[x+1][y+0] = true;
+    field.cells[x+1][y+1] = true;
+    field.cells[x+1][y+2] = true;
+}
 
 int main()
 {
@@ -54,7 +100,7 @@ int main()
 
     std::random_device randomDevice;
     std::mt19937 randomGenerator(randomDevice());
-    std::bernoulli_distribution distribution(0.3);
+    std::bernoulli_distribution distribution(0.25);
 
     for (int y = 0; y < field.h; y++) {
         for (int x = 0; x < field.w; x++) {
@@ -62,9 +108,16 @@ int main()
         }
     }
 
+    addGlider(field, 0, 0);
+    addBlinker(field, 5, 5);
+    addBlinker(field, 10, 10);
+    addGlider(field, 20, 20);
+    addGlider(field, 15, 15);
+    addGlider(field, 10, 15);
+
     while (true) {
         print(field);
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(500ms);
         next(field);
     }
 
@@ -94,19 +147,20 @@ bool state(const Field& field, const int x, const int y)
  */
 bool stateOnCyclicField(const Field& field, int x, int y)
 {
-    auto fix = [](int& value, int size){
-        if (value < 0) {
-            value = size + (value % size);
-        }
-        if (value >= size) {
-            value %= size;
-        }
-    };
-
-    fix(x, field.w);
-    fix(y, field.h);
+    fixCyclicPoint(x, field.w);
+    fixCyclicPoint(y, field.h);
 
     return field.cells[x][y];
+}
+
+void fixCyclicPoint(int& value, const int size)
+{
+    if (value < 0) {
+        value = size + (value % size);
+    }
+    if (value >= size) {
+        value %= size;
+    }
 }
 
 void next(Field& field)
