@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <random>
+#include <exception>
 
 using namespace std::chrono_literals;
 
@@ -70,6 +71,11 @@ int main()
     return 0;
 }
 
+/**
+ * Returns the cell state.
+ *
+ * Assumes that field has borders where there is no life
+ */
 bool state(const Field& field, const int x, const int y)
 {
     if (x < 0 || x >= field.w) {
@@ -78,6 +84,28 @@ bool state(const Field& field, const int x, const int y)
     if (y < 0 || y >= field.h) {
         return false;
     }
+    return field.cells[x][y];
+}
+
+/**
+ * Returns the cell state.
+ *
+ * Assumes that field is cyclic.
+ */
+bool stateOnCyclicField(const Field& field, int x, int y)
+{
+    auto fix = [](int& value, int size){
+        if (value < 0) {
+            value = size + (value % size);
+        }
+        if (value >= size) {
+            value %= size;
+        }
+    };
+
+    fix(x, field.w);
+    fix(y, field.h);
+
     return field.cells[x][y];
 }
 
@@ -93,7 +121,7 @@ void next(Field& field)
                     if (dx == 0 && dy == 0) {
                         continue;
                     }
-                    if (state(field, x + dx, y + dy)) {
+                    if (stateOnCyclicField(field, x + dx, y + dy)) {
                         count++;
                     }
                 }
